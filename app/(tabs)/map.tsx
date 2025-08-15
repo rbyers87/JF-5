@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
-import UniversalMap from '@/components/UniversalMap';
+import { Platform, View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import * as Location from 'expo-location';
 import { JurisdictionService } from '@/services/jurisdictionService';
 import { LocationData } from '@/types/location';
@@ -80,11 +79,14 @@ export default function MapScreen() {
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <UniversalMap location={location} jurisdictions={jurisdictions} />
-    </View>
-  );
+  // Platform-specific rendering
+  if (Platform.OS === 'web') {
+    const MapScreenWeb = require('./map.web').default;
+    return <MapScreenWeb location={location} jurisdictions={jurisdictions} />;
+  } else {
+    const MapScreenNative = require('./map.native').default;
+    return <MapScreenNative location={location} jurisdictions={jurisdictions} />;
+  }
 }
 
 const styles = StyleSheet.create({
