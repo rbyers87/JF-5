@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Platform, View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import * as Location from 'expo-location';
 import { JurisdictionService } from '@/services/jurisdictionService';
-import { LocationData } from '@/types/location';
 import { Jurisdiction } from '@/types';
 
 export default function MapScreen() {
@@ -14,7 +13,6 @@ export default function MapScreen() {
   useEffect(() => {
     (async () => {
       try {
-        // Get location permission
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
           setError('Location permission denied');
@@ -22,14 +20,12 @@ export default function MapScreen() {
           return;
         }
         
-        // Get current location
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation({
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude
         });
         
-        // Find jurisdiction
         const jurisdictionData = await JurisdictionService.getJurisdictionByCoordinates(
           currentLocation.coords.latitude,
           currentLocation.coords.longitude
@@ -79,13 +75,12 @@ export default function MapScreen() {
     );
   }
 
-  // Platform-specific rendering
   if (Platform.OS === 'web') {
-    const MapScreenWeb = require('./map.web').default;
-    return <MapScreenWeb location={location} jurisdictions={jurisdictions} />;
+    const WebMapView = require('@/components/WebMapView').default;
+    return <WebMapView location={location} jurisdictions={jurisdictions} />;
   } else {
-    const MapScreenNative = require('./map.native').default;
-    return <MapScreenNative location={location} jurisdictions={jurisdictions} />;
+    const NativeMapView = require('@/components/NativeMapView').default;
+    return <NativeMapView location={location} jurisdictions={jurisdictions} />;
   }
 }
 
