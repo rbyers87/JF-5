@@ -28,16 +28,18 @@ const NativeMap = ({ location, jurisdictions }: {
           pinColor="#1e40af"
         />
         {jurisdictions.map((jur) => (
-          <Polygon
-            key={jur.id}
-            coordinates={jur.boundary.map(coord => ({
-              latitude: coord[1],
-              longitude: coord[0]
-            }))}
-            fillColor="rgba(30, 64, 175, 0.3)"
-            strokeColor="rgba(30, 64, 175, 0.8)"
-            strokeWidth={2}
-          />
+          jur.boundary && jur.boundary.length > 0 && (
+            <Polygon
+              key={jur.id}
+              coordinates={jur.boundary.map(coord => ({
+                latitude: coord[1], // Convert from [long, lat] to lat
+                longitude: coord[0] // Convert from [long, lat] to long
+              }))}
+              fillColor="rgba(30, 64, 175, 0.3)"
+              strokeColor="rgba(30, 64, 175, 0.8)"
+              strokeWidth={2}
+            />
+          )
         ))}
       </MapView>
     </View>
@@ -49,15 +51,30 @@ const WebMap = ({ location, jurisdictions }: {
   location: { latitude: number; longitude: number }, 
   jurisdictions: Jurisdiction[] 
 }) => {
-  const [isClient, setIsClient] = useState(false);
-  
+  const [MapComponent, setMapComponent] = useState<React.ComponentType<any> | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    setIsClient(true);
+    // Dynamically import the web map component
+    const loadMap = async () => {
+      try {
+        const { default: WebLeafletMap } = await import('@/components/WebLeafletMap');
+        setMapComponent(() => WebLeafletMap);
+      } catch (error) {
+        console.error('Failed to load web map:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMap();
     
     // Dynamically load Leaflet CSS
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+    link.crossOrigin = '';
     document.head.appendChild(link);
     
     return () => {
@@ -65,7 +82,7 @@ const WebMap = ({ location, jurisdictions }: {
     };
   }, []);
 
-  if (!isClient) {
+  if (loading) {
     return (
       <div style={styles.fallbackContainer}>
         <p>Loading map...</p>
@@ -73,42 +90,15 @@ const WebMap = ({ location, jurisdictions }: {
     );
   }
 
-  // Dynamically import Leaflet components
-  const { MapContainer, TileLayer, Marker, Polygon, Popup } = require('react-leaflet');
-  const L = require('leaflet');
+  if (!MapComponent) {
+    return (
+      <div style={styles.fallbackContainer}>
+        <p>Map not available. Please try again later.</p>
+      </div>
+    );
+  }
 
-  // Fix marker icons
-  delete L.Icon.Default.prototype._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  });
-
-  return (
-    <div style={{ width: '100%', height: '100vh' }}>
-      <MapContainer
-        center={[location.latitude, location.longitude]}
-        zoom={13}
-        style={{ height: '100%', width: '100%' }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <Marker position={[location.latitude, location.longitude]}>
-          <Popup>Your Location</Popup>
-        </Marker>
-        {jurisdictions.map((jur) => (
-          <Polygon
-            key={jur.id}
-            positions={jur.boundary.map(coord => [coord[1], coord[0])}
-            pathOptions={{ color: '#1e40af', fillOpacity: 0.3 }}
-          />
-        ))}
-      </MapContainer>
-    </div>
-  );
+  return <MapComponent location={location} jurisdictions={jurisdictions} />;
 };
 
 // Main Universal Map Component
@@ -127,9 +117,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   fallbackContainer: {
+    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
     backgroundColor: '#f3f4f6',
+    padding: 20,
+    textAlign: 'center',
   }
 });
