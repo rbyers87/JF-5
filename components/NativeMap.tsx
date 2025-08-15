@@ -1,15 +1,7 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { MapView, Marker, Polygon } from 'expo-maps';
-import { Jurisdiction } from '@/types';
+import { StyleSheet, View } from 'react-native';
 
-export default function NativeMap({ 
-  location, 
-  jurisdictions 
-}: { 
-  location: { latitude: number; longitude: number }, 
-  jurisdictions: Jurisdiction[] 
-}) {
+export function NativeMap({ location, jurisdictions }) {
   return (
     <View style={styles.container}>
       <MapView 
@@ -21,13 +13,9 @@ export default function NativeMap({
           longitudeDelta: 0.0421,
         }}
       >
-        <Marker 
-          coordinate={location} 
-          title="Your Location" 
-          pinColor="#1e40af"
-        />
+        <Marker coordinate={location} pinColor="#1e40af" />
         {jurisdictions.map((jur) => (
-          jur.boundary && jur.boundary.length > 0 && (
+          jur.boundary?.length > 0 && (
             <Polygon
               key={jur.id}
               coordinates={jur.boundary.map(coord => ({
@@ -35,8 +23,6 @@ export default function NativeMap({
                 longitude: coord[0]
               }))}
               fillColor="rgba(30, 64, 175, 0.3)"
-              strokeColor="rgba(30, 64, 175, 0.8)"
-              strokeWidth={2}
             />
           )
         ))}
