@@ -19,18 +19,22 @@ export interface CountyData {
 }
 
 export interface LocationData {
-  coordinates: Coordinates;
-  address?: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
   city?: CityData;
-  county: CountyData;
-  jurisdiction: 'city' | 'county';
+  county?: CountyData;
+  jurisdiction: 'city' | 'county' | 'state';
   primaryAgency: {
     name: string;
-    type: 'Police Department' | 'Sheriff\'s Office';
+    type: string;
     phone?: string;
     website?: string;
     address?: string;
   };
+  // Add this new field
+  boundary: [number, number][]; // [longitude, latitude]
 }
 
 export interface GeocodingResult {
