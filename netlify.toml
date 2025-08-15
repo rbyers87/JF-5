@@ -1,0 +1,9 @@
+[build]
+  # Install with legacy peer deps to avoid React version conflict,
+  # then export the Expo app for web using Metro bundler
+  command = "npm install --legacy-peer-deps && npx expo export --platform web"
+  publish = "dist"
+
+[build.environment]
+  # Ensures all npm installs use the legacy-peer-deps flag
+  NPM_FLAGS = "--legacy-peer-deps"
