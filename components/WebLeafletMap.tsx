@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { MapContainer, TileLayer, Marker, Polygon, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Jurisdiction } from '@/types';
@@ -18,18 +18,6 @@ export default function WebLeafletMap({
   location: { latitude: number; longitude: number };
   jurisdictions: Jurisdiction[];
 }) {
-  useEffect(() => {
-    // Dynamically load Leaflet CSS
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    document.head.appendChild(link);
-    
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
-
   return (
     <div style={{ width: '100%', height: '100vh' }}>
       <MapContainer
@@ -45,11 +33,13 @@ export default function WebLeafletMap({
           <Popup>Your Location</Popup>
         </Marker>
         {jurisdictions.map((jur) => (
-          <Polygon
-            key={jur.id}
-            positions={jur.boundary}
-            pathOptions={{ color: '#1e40af', fillOpacity: 0.3 }}
-          />
+          jur.boundary && jur.boundary.length > 0 && (
+            <Polygon
+              key={jur.id}
+              positions={jur.boundary.map(coord => [coord[1], coord[0]])} // Convert to [lat, long]
+              pathOptions={{ color: '#1e40af', fillOpacity: 0.3 }}
+            />
+          )
         ))}
       </MapContainer>
     </div>
