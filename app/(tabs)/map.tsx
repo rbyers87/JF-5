@@ -76,11 +76,11 @@ export default function MapScreen() {
   }
 
   if (Platform.OS === 'web') {
-    const WebMapView = require('@/components/WebMapView').default;
-    return <WebMapView location={location} jurisdictions={jurisdictions} />;
+    const WebMap = require('@/components/WebMap.web').default;
+    return <WebMap location={location} jurisdictions={jurisdictions} />;
   } else {
-    const NativeMapView = require('@/components/NativeMapView').default;
-    return <NativeMapView location={location} jurisdictions={jurisdictions} />;
+    const NativeMap = require('@/components/NativeMap').default;
+    return <NativeMap location={location} jurisdictions={jurisdictions} />;
   }
 }
 
