@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, View, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import UniversalMap from '@/components/UniversalMap';
 import * as Location from 'expo-location';
 import { JurisdictionService } from '@/services/jurisdictionService';
